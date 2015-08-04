@@ -4,6 +4,7 @@
     <title>WebSocket Test Application</title>
     <script src="bower_components/angular/angular.js"></script>
     <script src="bower_components/angular-uuid/uuid.js"></script>
+    <script src="bower_components/angularjs-scroll-glue/src/scrollglue.js"></script>
     <link href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet"/>
     <link href="bower_components/bootstrap/dist/css/bootstrap-theme.css" rel="stylesheet"/>
     <link href="css/app.css" rel="stylesheet"/>
@@ -38,13 +39,13 @@
         </tr>
     </table>
     <h4>Local Messages</h4>
-    <div class="msg-container">
+    <div class="msg-container" scroll-glue="glued">
         <div ng-repeat="message in localMessages">
             {{message.message}}
         </div>
     </div>
     <h4>WebSocket Messages</h4>
-    <div class="msg-container">
+    <div class="msg-container" scroll-glue="glued">
         <div ng-repeat="message in webSocketMessages">
             <p ng-class="message.class">{{message.message}}</p>
         </div>

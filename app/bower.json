@@ -12,6 +12,7 @@
     "angular-mocks": "~1.4.0",
     "angular-bootstrap": "^0.13.0",
     "angular-uuid":"",
+    "angularjs-scroll-glue":"",
     "html5-boilerplate": "~5.2.0",
     "jquery": "~2.1.1",
     "bootstrap": "~3.2.0"

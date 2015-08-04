@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module("webSocketApp", ['uuid'])
+angular.module("webSocketApp", ['uuid', 'luegg.directives'])
     .constant('webSocketConfig',{
         URL:"ws://localhost:8001/jms",
         TOPIC_PUB:"/topic/testWSTodoSnd",
