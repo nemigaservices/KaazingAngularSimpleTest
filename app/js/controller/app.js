@@ -13,11 +13,11 @@ angular.module("webSocketApp", ['uuid', 'luegg.directives'])
         $scope.localMessages=[];
         $scope.webSocketMessages=[];
         $scope.todos = [
-            {id:1, action: "Get groceries", complete: false},
-            {id:2, action: "Call plumber", complete: false},
-            {id:3, action: "Buy running shoes", complete: true},
-            {id:4, action: "Buy flowers", complete: false},
-            {id:5, action: "Call family", complete: false}];
+            {id:1, action: "Get groceries", complete: false, available:true},
+            {id:2, action: "Call plumber", complete: false,  available:true},
+            {id:3, action: "Buy running shoes", complete: true,  available:true},
+            {id:4, action: "Buy flowers", complete: false,  available:true},
+            {id:5, action: "Call family", complete: false,  available:true}];
         $scope.mouseoverIndex = -1;
         $scope.data = {
             rowColor: "Blue"
@@ -36,16 +36,21 @@ angular.module("webSocketApp", ['uuid', 'luegg.directives'])
             }
         }
         $scope.getDoneColor = function (item, index) {
-            if ($scope.mouseoverIndex == index) {
-                if (item.complete)
-                    return 'MouseOverDone';
-                else
-                    return 'MouseOverNotDone';
+            if (!item.available){
+                return "Busy";
             }
-            else if (item.complete)
-                return 'Done';
-            else
-                return 'NotDone';
+            else{
+                if ($scope.mouseoverIndex == index) {
+                    if (item.complete)
+                        return 'MouseOverDone';
+                    else
+                        return 'MouseOverNotDone';
+                }
+                else if (item.complete)
+                    return 'Done';
+                else
+                    return 'NotDone';
+            }
         }
         $scope.itemClicked=function(item){
             var msg="Item "+item.id+" is now "+((item.complete)?"completed":"incompleted!");
@@ -105,6 +110,22 @@ angular.module("webSocketApp", ['uuid', 'luegg.directives'])
         $scope.onMessage=function(message){
             var cmd=angular.fromJson(message);
             $scope.logWebSocketMessage("Received from: "+cmd.from+", command: "+cmd.command+", item id: "+cmd.item,"received")
+            for(var i=0;i<$scope.todos.length;i++){
+                if ($scope.todos[i].id===cmd.item){
+                    if (cmd.command==="busy"){
+                        $scope.todos[i].available=false;
+                    }
+                    else if (cmd.command==="available"){
+                        $scope.todos[i].available=true;
+                    }
+                    else if (cmd.command==="complete"){
+                        $scope.todos[i].complete=true;
+                    }
+                    else if (cmd.command==="incomplete"){
+                        $scope.todos[i].complete=false;
+                    }
+                }
+            }
         }
 
         $scope.sendCommand=function(item, command){

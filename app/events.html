@@ -34,7 +34,7 @@
             <td>{{$index + 1}}</td>
             <td>{{item.action}}</td>
             <td ng-class="getDoneColor(item, $index)" ng-mouseenter="handleMouseoverEvent($event, $index,item)" ng-mouseleave="handleMouseoverEvent($event, $index, item)">
-                <input type="checkbox" ng-model="item.complete" ng-change="itemClicked(item)">
+                <input type="checkbox" ng-model="item.complete" ng-change="itemClicked(item)" ng-disabled="!item.available">
             </td>
         </tr>
     </table>

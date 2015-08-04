@@ -41,6 +41,7 @@ tr.Blue {background-color: lightblue;}
 .NotDone {background-color: lightcoral;}
 .MouseOverNotDone {background-color: lightsalmon}
 .MouseOverDone {background-color: lavender;}
+.Busy {background-color: gray;}
 
 .msg-container {
     width: 80%;
