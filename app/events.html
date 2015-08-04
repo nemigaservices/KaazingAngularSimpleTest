@@ -3,6 +3,7 @@
 <head>
     <title>WebSocket Test Application</title>
     <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-uuid/uuid.js"></script>
     <link href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet"/>
     <link href="bower_components/bootstrap/dist/css/bootstrap-theme.css" rel="stylesheet"/>
     <link href="css/app.css" rel="stylesheet"/>
@@ -31,7 +32,7 @@
         <tr ng-repeat="item in todos" ng-class="data.rowColor">
             <td>{{$index + 1}}</td>
             <td>{{item.action}}</td>
-            <td ng-class="getDoneColor(item, $index)" ng-mouseenter="handleMouseoverEvent($event, $index)" ng-mouseleave="handleMouseoverEvent($event, $index)">
+            <td ng-class="getDoneColor(item, $index)" ng-mouseenter="handleMouseoverEvent($event, $index,item)" ng-mouseleave="handleMouseoverEvent($event, $index, item)">
                 <input type="checkbox" ng-model="item.complete" ng-change="itemClicked(item)">
             </td>
         </tr>

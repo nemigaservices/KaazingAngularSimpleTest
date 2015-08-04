@@ -1,14 +1,15 @@
 'use strict';
 
-angular.module("webSocketApp", [])
+angular.module("webSocketApp", ['uuid'])
     .constant('webSocketConfig',{
         URL:"ws://localhost:8001/jms",
-        TOPIC_PUB:"/topic/testWSTodoTopic",
-        TOPIC_SUB:"/topic/testWSTodoTopic",
+        TOPIC_PUB:"/topic/testWSTodoSnd",
+        TOPIC_SUB:"/topic/testWSTodoRcv",
         username:"",
         password:""
     })
-    .controller("mainCtl", function ($scope,$log,$timeout, webSocketConfig) {
+    .controller("mainCtl", function ($scope,$log,$timeout, uuid4, webSocketConfig) {
+        $scope.appId=uuid4.generate();
         $scope.localMessages=[];
         $scope.webSocketMessages=[];
         $scope.todos = [
@@ -22,11 +23,16 @@ angular.module("webSocketApp", [])
             rowColor: "Blue"
         }
         $scope.buttonNames = ["Gray", "Yellow", "Blue"];
-        $scope.handleMouseoverEvent = function (e, index) {
+
+        $scope.handleMouseoverEvent = function (e, index, item) {
             $log.info("Event type " + e.type);
             $scope.mouseoverIndex = -1;
             if (e.type === "mouseover") {
                 $scope.mouseoverIndex = index;
+                $scope.sendCommand(item,"busy");
+            }
+            else{
+                $scope.sendCommand(item,"available");
             }
         }
         $scope.getDoneColor = function (item, index) {
@@ -49,8 +55,9 @@ angular.module("webSocketApp", [])
                 message:msg
             }
             $scope.localMessages.push(msgObj);
+            $scope.sendCommand(item,((item.complete)?"complete":"incomplete"))
         }
-        $scope.logWebSocketMessage=function(msg, cls){
+        $scope.logWebSocketMessageImpl=function(msg, cls){
             if (cls===undefined || cls==null)
                 cls="info";
             $log.info("From WebSocket: "+msg);
@@ -62,9 +69,13 @@ angular.module("webSocketApp", [])
             $scope.webSocketMessages.push(msgObj);
 
         }
+        $scope.logWebSocketMessage=function(msg, cls){
+            $timeout($scope.logWebSocketMessageImpl(msg, cls), 100);
+        }
+
         $scope.handleException=function(e){
             $log.error(e);
-            $timeout($scope.logWebSocketMessage("Error! "+e, "error"), 100);
+            $scope.logWebSocketMessage("Error! "+e, "error");
         }
 
         function setupSSO(webSocketFactory) {
@@ -76,6 +87,48 @@ angular.module("webSocketApp", [])
             webSocketFactory.setChallengeHandler(basicHandler);
         }
 
+        $scope.prepareSend=function(){
+            var dest=$scope.session.createTopic(webSocketConfig.TOPIC_PUB);
+            $scope.producer = $scope.session.createProducer(dest);
+            $scope.logWebSocketMessage("Producer is ready! AppID="+$scope.appId);
+        }
+
+        $scope.prepareReceive=function(rcvFunction){
+            var dest=$scope.session.createTopic(webSocketConfig.TOPIC_SUB);
+            $scope.consumer = $scope.session.createConsumer(dest,"appId<>'"+$scope.appId+"'");
+            $scope.consumer.setMessageListener(function(message) {
+                rcvFunction(message.getText());
+            });
+            $scope.logWebSocketMessage("Consumer is ready!");
+        }
+
+        $scope.onMessage=function(message){
+            var cmd=angular.fromJson(message);
+            $scope.logWebSocketMessage("Received from: "+cmd.from+", command: "+cmd.command+", item id: "+cmd.item,"received")
+        }
+
+        $scope.sendCommand=function(item, command){
+            var cmd={
+                from: $scope.appId,
+                command:command,
+                item:item.id
+            }
+
+            var msg=angular.toJson(cmd);
+            var textMsg = $scope.session.createTextMessage(msg);
+            textMsg.setStringProperty("appId", $scope.appId);
+            try {
+                var future = $scope.producer.send(textMsg, function(){
+                    if (future.exception) {
+                        $scope.handleException(future.exception);
+                    }
+                });
+            } catch (e) {
+                $scope.handleException(e);
+            }
+            $scope.logWebSocketMessage("Send command "+msg,"sent");
+
+        }
 
         $scope.connectToWebSocket=function() {
 
@@ -99,6 +152,8 @@ angular.module("webSocketApp", [])
 
                                 $scope.connection.start(function () {
                                     $scope.logWebSocketMessage("JMS session created");
+                                    $scope.prepareSend();
+                                    $scope.prepareReceive($scope.onMessage);
                                 });
                             }
                             catch (e) {
