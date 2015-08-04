@@ -48,3 +48,8 @@ tr.Blue {background-color: lightblue;}
     overflow-y: scroll;
     overflow-x:hidden;
 }
+
+.msg-error {color:red}
+.msg-info {color:blue}
+.msg-sent {color:goldenrod}
+.msg-recived {color:green}
